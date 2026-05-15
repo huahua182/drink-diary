@@ -542,7 +542,7 @@ function ghApi(path, method, body) {
 
 function ghReadFile(nickname) {
   return ghApi('/repos/' + adminConfig.repo + '/contents/data_' + nickname + '.json', 'GET')
-    .then(data => JSON.parse(atob(data.content)));
+    .then(data => JSON.parse(fromBase64(data.content)));
 }
 
 
@@ -551,6 +551,12 @@ function toBase64(str) {
   let bin = '';
   bytes.forEach(b => bin += String.fromCharCode(b));
   return btoa(bin);
+}
+function fromBase64(b64) {
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
 }
 
 function ghWriteFile(nickname, records) {
@@ -682,7 +688,7 @@ function showMainView(user) {
     const bPath = 'brands_' + user + '.json';
     ghApi('/repos/' + adminConfig.repo + '/contents/' + bPath, 'GET')
       .then(data => {
-        const brands = JSON.parse(atob(data.content));
+        const brands = JSON.parse(fromBase64(data.content));
         saveCustomBrandsLocal(user, brands);
         buildBrandGrid();
       }).catch(() => {});
