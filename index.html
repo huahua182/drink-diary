@@ -542,10 +542,9 @@ function ghApi(path, method, body) {
 
 function ghReadFile(nickname) {
   return ghApi('/repos/' + adminConfig.repo + '/contents/data_' + nickname + '.json', 'GET')
-    .then(data => {
-      return JSON.parse(atob(data.content));
-    });
+    .then(data => JSON.parse(atob(data.content)));
 }
+
 
 function toBase64(str) {
   const bytes = new TextEncoder().encode(str);
@@ -568,17 +567,25 @@ function ghWriteFile(nickname, records) {
 }
 
 function syncFromGitHub(nickname) {
-  if (!adminConfig || !adminConfig.token) return Promise.resolve(null);
+  if (!adminConfig || !adminConfig.token) {
+    $('syncStatus').textContent = '未配置';
+    return Promise.resolve(null);
+  }
   $('syncStatus').textContent = '同步中...';
   return ghReadFile(nickname).then(records => {
     if (records && Array.isArray(records)) {
-      // 同步自定义品牌也一起存
       saveRecordsLocal(nickname, records);
     }
     $('syncStatus').textContent = '✓';
     return records;
-  }).catch(() => {
-    $('syncStatus').textContent = '离线';
+  }).catch(err => {
+    if (err.message === '404') {
+      $('syncStatus').textContent = '✓';
+    } else if (err.message === '401' || err.message === '403') {
+      $('syncStatus').textContent = 'Token无效';
+    } else {
+      $('syncStatus').textContent = '离线';
+    }
     return null;
   });
 }
