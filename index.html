@@ -579,7 +579,11 @@ function syncFromGitHub(nickname) {
     $('syncStatus').textContent = '✓';
     return records;
   }).catch(err => {
-    $('syncStatus').textContent = err.message || '离线';
+    if (err.message === '404') {
+      $('syncStatus').textContent = '✓';
+    } else {
+      $('syncStatus').textContent = err.message || '离线';
+    }
     return null;
   });
 }
