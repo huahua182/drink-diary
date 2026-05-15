@@ -579,13 +579,7 @@ function syncFromGitHub(nickname) {
     $('syncStatus').textContent = '✓';
     return records;
   }).catch(err => {
-    if (err.message === '404') {
-      $('syncStatus').textContent = '✓';
-    } else if (err.message === '401' || err.message === '403') {
-      $('syncStatus').textContent = 'Token无效';
-    } else {
-      $('syncStatus').textContent = '离线';
-    }
+    $('syncStatus').textContent = err.message || '离线';
     return null;
   });
 }
